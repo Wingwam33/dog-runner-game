@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            background: linear-gradient(180deg, #87CEEB 0%, #90EE90 70%, #8FBC8F 100%);
+            border: 4px solid #654321;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(180deg, #8B7355 0%, #654321 100%);
+            border-top: 3px solid #3e2723;
+        }
+
+        #dog {
+            position: absolute;
+            bottom: 80px;
+            left: 50px;
+            width: 50px;
+            height: 40px;
+            transition: bottom 0.1s;
+        }
+
+        .dog-running {
+            animation: dogRun 0.3s steps(2) infinite;
+        }
+
+        @keyframes dogRun {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+
+        .obstacle {
+            position: absolute;
+            bottom: 80px;
+            right: -50px;
+            width: 30px;
+            height: 40px;
+            background: #8B4513;
+            border: 2px solid #654321;
+            border-radius: 5px;
+            animation: moveObstacle 3s linear;
+        }
+
+        @keyframes moveObstacle {
+            from {
+                right: -50px;
+            }
+            to {
+                right: 100%;
+            }
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0,0,0,0.8);
+            padding: 40px;
+            border-radius: 20px;
+            display: none;
+            z-index: 100;
+        }
+
+        #gameOver h1 {
+            color: #ff6b6b;
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        #gameOver p {
+            color: white;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        #restartBtn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background: #4ECDC4;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #restartBtn:hover {
+            background: #45B7D1;
+            transform: scale(1.05);
+        }
+
+        #restartBtn:active {
+            transform: scale(0.95);
+        }
+
+        #instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .cloud {
+            position: absolute;
+            top: 50px;
+            width: 80px;
+            height: 30px;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.7;
+            animation: moveCloud 20s linear infinite;
+        }
+
+        @keyframes moveCloud {
+            from { left: 100%; }
+            to { left: -100px; }
+        }
+
+        @media (max-width: 768px) {
+            #gameContainer {
+                height: 300px;
+                border: 2px solid #654321;
+            }
+            
+            #score, #instructions {
+                font-size: 16px;
+            }
+            
+            #gameOver h1 {
+                font-size: 36px;
+            }
+            
+            #gameOver p {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="instructions">Tap to Jump!</div>
+        <div id="score">Score: 0</div>
+        
+        <div class="cloud" style="top: 40px; animation-delay: 0s;"></div>
+        <div class="cloud" style="top: 80px; animation-delay: 7s;"></div>
+        <div class="cloud" style="top: 60px; animation-delay: 14s;"></div>
+        
+        <svg id="dog" class="dog-running" viewBox="0 0 50 40">
+            <!-- Dog body -->
+            <ellipse cx="25" cy="25" rx="18" ry="12" fill="#8B4513"/>
+            <!-- Dog head -->
+            <circle cx="40" cy="20" r="10" fill="#A0522D"/>
+            <!-- Dog ears -->
+            <ellipse cx="35" cy="15" rx="4" ry="7" fill="#654321"/>
+            <ellipse cx="45" cy="15" rx="4" ry="7" fill="#654321"/>
+            <!-- Dog eye -->
+            <circle cx="42" cy="18" r="2" fill="black"/>
+            <!-- Dog nose -->
+            <circle cx="47" cy="20" r="2" fill="black"/>
+            <!-- Dog legs -->
+            <rect x="15" y="35" width="3" height="8" fill="#8B4513" rx="1"/>
+            <rect x="22" y="35" width="3" height="8" fill="#8B4513" rx="1"/>
+            <rect x="28" y="35" width="3" height="8" fill="#8B4513" rx="1"/>
+            <rect x="35" y="35" width="3" height="8" fill="#8B4513" rx="1"/>
+            <!-- Dog tail -->
+            <path d="M 8 25 Q 5 20, 8 15" stroke="#654321" stroke-width="3" fill="none"/>
+        </svg>
+        
+        <div id="ground"></div>
+        
+        <div id="gameOver">
+            <h1>Game Over!</h1>
+            <p id="finalScore">Score: 0</p>
+            <button id="restartBtn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const dog = document.getElementById('dog');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverScreen = document.getElementById('gameOver');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+
+        let isJumping = false;
+        let isGameOver = false;
+        let score = 0;
+        let obstacleInterval;
+        let scoreInterval;
+        let obstacles = [];
+
+        const JUMP_HEIGHT = 100;
+        const JUMP_DURATION = 500;
+        const OBSTACLE_SPEED = 3000;
+        const OBSTACLE_INTERVAL = 2000;
+
+        function jump() {
+            if (isJumping || isGameOver) return;
+            
+            isJumping = true;
+            dog.classList.remove('dog-running');
+            
+            let dogBottom = 80;
+            const jumpUp = setInterval(() => {
+                if (dogBottom >= 80 + JUMP_HEIGHT) {
+                    clearInterval(jumpUp);
+                    
+                    const jumpDown = setInterval(() => {
+                        if (dogBottom <= 80) {
+                            clearInterval(jumpDown);
+                            dog.style.bottom = '80px';
+                            isJumping = false;
+                            dog.classList.add('dog-running');
+                        } else {
+                            dogBottom -= 5;
+                            dog.style.bottom = dogBottom + 'px';
+                        }
+                    }, 20);
+                } else {
+                    dogBottom += 5;
+                    dog.style.bottom = dogBottom + 'px';
+                }
+            }, 20);
+        }
+
+        function createObstacle() {
+            if (isGameOver) return;
+
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            obstacle.style.animationDuration = `${OBSTACLE_SPEED}ms`;
+            gameContainer.appendChild(obstacle);
+            obstacles.push(obstacle);
+
+            setTimeout(() => {
+                if (obstacle.parentNode) {
+                    obstacle.remove();
+                    obstacles = obstacles.filter(o => o !== obstacle);
+                }
+            }, OBSTACLE_SPEED);
+        }
+
+        function checkCollision() {
+            const dogRect = dog.getBoundingClientRect();
+            
+            obstacles.forEach(obstacle => {
+                const obstacleRect = obstacle.getBoundingClientRect();
+                
+                if (
+                    dogRect.left < obstacleRect.right &&
+                    dogRect.right > obstacleRect.left &&
+                    dogRect.bottom > obstacleRect.top &&
+                    dogRect.top < obstacleRect.bottom
+                ) {
+                    endGame();
+                }
+            });
+        }
+
+        function endGame() {
+            if (isGameOver) return;
+            
+            isGameOver = true;
+            clearInterval(obstacleInterval);
+            clearInterval(scoreInterval);
+            
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
+            
+            dog.classList.remove('dog-running');
+            finalScoreDisplay.textContent = `Score: ${score}`;
+            gameOverScreen.style.display = 'block';
+        }
+
+        function startGame() {
+            isGameOver = false;
+            isJumping = false;
+            score = 0;
+            obstacles = [];
+            
+            dog.style.bottom = '80px';
+            dog.classList.add('dog-running');
+            scoreDisplay.textContent = 'Score: 0';
+            gameOverScreen.style.display = 'none';
+            
+            // Create obstacles
+            obstacleInterval = setInterval(createObstacle, OBSTACLE_INTERVAL);
+            
+            // Increase score
+            scoreInterval = setInterval(() => {
+                if (!isGameOver) {
+                    score++;
+                    scoreDisplay.textContent = 'Score: ' + score;
+                }
+            }, 100);
+            
+            // Check collisions
+            setInterval(() => {
+                if (!isGameOver) {
+                    checkCollision();
+                }
+            }, 50);
+        }
+
+        // Event listeners
+        gameContainer.addEventListener('click', jump);
+        gameContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            jump();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            }
+        });
+
+        restartBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            startGame();
+        });
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>
